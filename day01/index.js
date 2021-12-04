@@ -1,24 +1,30 @@
 const fs = require('fs/promises')
 const { argv } = require('process')
 
-function getAmountLargerThanPrev(file) {
+function loadLines(file) {
     return new Promise(async (resolve, reject) => {
-        const input = await fs.readFile(file, { encoding: 'utf-8' }).catch(reject)
-        const lines = input.split('\n')
-
-        let largerThanPrev = 0
-
-        for (let i = 1; i < lines.length; i++) {
-            const prev = Number(lines[i - 1])
-            const curr = Number(lines[i])
-            const diff = curr - prev
-            if (diff > 0) largerThanPrev++
-        }
-
-        resolve(largerThanPrev)
+        fs.readFile(file, { encoding: 'utf-8' })
+            .then(text => resolve(text.split('\n')))    
+            .catch(reject)
     })
 }
 
-getAmountLargerThanPrev(argv[2])
-    .then(console.log)
+function countLargerThanPrev(values, blockSize = 1) {
+    let largerThanPrev = 0
+
+    for (let i = blockSize; i < values.length; i++) {        
+        const prev = Number(values[i - blockSize])
+        const curr = Number(values[i])
+        const diff = curr - prev
+        if (diff > 0) largerThanPrev++
+    }
+
+    return largerThanPrev
+}
+
+loadLines(argv[2])
+    .then(values => {
+        const res = countLargerThanPrev(values, 3)
+        console.log(res)
+    })
     .catch(console.error)
